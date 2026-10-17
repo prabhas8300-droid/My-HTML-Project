@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annapurna Canteen - Vel Tech Backend Hub</title>
+    <!-- html2pdf Library Dependency Link -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #ff5e36;
+            --primary-glow: rgba(255, 94, 54, 0.3);
+            --bg-cyber: #0a0f1d;
+            --card-glass: rgba(20, 30, 55, 0.65);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-light: #e2e8f0;
+            --text-muted: #718096;
+            --accent-green: #00e676;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: radial-gradient(circle at top right, #131a35, var(--bg-cyber)); color: var(--text-light); min-height: 100vh; overflow-x: hidden; }
+        .hidden { display: none !important; }
+        
+        /* Glassmorphism Elements */
+        .glass-card { background: var(--card-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--border-glass); border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        
+        /* --- LOGIN PAGE --- */
+        #login-page { display: flex; min-height: 100vh; }
+        .login-banner { flex: 1; background: linear-gradient(135deg, rgba(10, 15, 29, 0.85), rgba(255, 94, 54, 0.2)), url('https://images.unsplash.com/photo-1567521464027-f127ff144326?q=80&w=1000&auto=format&fit=crop') center/cover; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center; border-right: 1px solid var(--border-glass); }
+        .login-banner h1 { font-size: 3.5rem; color: #fff; text-shadow: 0 0 20px var(--primary-glow); font-weight: 800; letter-spacing: -1px; }
+        .login-banner p { color: var(--text-muted); font-size: 1.2rem; margin-top: 10px; }
+        .login-container { width: 480px; display: flex; justify-content: center; align-items: center; padding: 40px; background: rgba(10, 15, 29, 0.95); }
+        @media(max-width: 850px) { #login-page { flex-direction: column; } .login-banner { padding: 60px 20px; } .login-container { width: 100%; } }
+        .login-card { width: 100%; max-width: 360px; padding: 30px; }
+        .login-card h2 { font-size: 28px; margin-bottom: 6px; font-weight: 700; background: linear-gradient(to right, #fff, #a0aec0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-card .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; }
+        
+        /* Form Inputs */
+        .form-group { margin-bottom: 22px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 9px; font-weight: 600; font-size: 13px; color: #a0aec0; letter-spacing: 0.5px; }
+        .form-group input, .form-group select { width: 100%; padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); border-radius: 8px; font-size: 15px; color: white; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 12px var(--primary-glow); background: rgba(255,255,255,0.06); }
+        
+        .btn { width: 100%; padding: 14px; background: var(--primary); border: none; color: white; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px var(--primary-glow); }
+        .btn:hover { background: #ff7350; transform: translateY(-1px); }
+        .forgot-link { display: inline-block; margin-top: 18px; color: var(--text-muted); text-decoration: none; font-size: 13px; }
+        .forgot-link:hover { color: var(--primary); text-decoration: underline; }
+
+        /* --- MAIN DASHBOARD INTERFACE --- */
+        nav { background: rgba(10, 15, 29, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-glass); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .nav-logo h2 { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .nav-logo span { color: var(--primary); }
+        .nav-tabs { display: flex; gap: 10px; }
+        .tab-btn { padding: 10px 20px; background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+        .tab-btn.active { background: rgba(255, 94, 54, 0.1); border-color: rgba(255, 94, 54, 0.3); color: var(--primary); }
+        .tab-btn:hover:not(.active) { color: #fff; background: rgba(255,255,255,0.03); }
+
+        .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+        
+        /* Functional Sub-menu bars */
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .search-wrapper { position: relative; width: 320px; }
+        .search-wrapper input { width: 100%; padding: 12px 16px; padding-left: 40px; background: var(--card-glass); border: 1px solid var(--border-glass); border-radius: 24px; color: white; font-size: 14px; }
+        .search-wrapper::before { content: "🔍"; position: absolute; left: 15px; top: 12px; font-size: 14px; opacity: 0.5; }
+        
+        .categories { display: flex; gap: 8px; flex-wrap: wrap; }
+        .cat-btn { padding: 8px 18px; border: 1px solid var(--border-glass); background: var(--card-glass); color: #a0aec0; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+        .cat-btn.active, .cat-btn:hover { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px var(--primary-glow); }
+
+        /* Menu Grid Engine */
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; }
+        .menu-item { overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .menu-item:hover { transform: translateY(-6px); border-color: rgba(255, 94, 54, 0.4); box-shadow: 0 12px 24px rgba(0,0,0,0.4); }
+        .menu-item.disabled { opacity: 0.4; pointer-events: none; }
+        .menu-item.disabled::after { content: "OUT OF STOCK"; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; color: #ff3838; font-weight: 800; font-size: 18px; letter-spacing: 2px; }
+        .item-img { width: 100%; height: 170px; object-fit: cover; border-bottom: 1px solid var(--border-glass); }
+        .item-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .item-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+        .item-name { font-size: 19px; font-weight: 700; color: #fff; }
+        .item-price { font-size: 19px; font-weight: 800; color: var(--primary); }
+        .item-cat { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; display: block; }
+        .add-to-cart { background: rgba(255,255,255,0.04); color: white; padding: 10px; border: 1px solid var(--border-glass); border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; width: 100%; transition: all 0.2s; }
+        .add-to-cart:hover { background: var(--primary); border-color: var(--primary); box-shadow: 0 4px 12px var(--primary-glow); }
+
+        /* --- BASKET & CHECKOUT GATEWAY --- */
+        .checkout-section { margin-top: 60px; padding: 35px; }
+        .checkout-section h3 { font-size: 22px; font-weight: 700; margin-bottom: 25px; border-bottom: 1px solid var(--border-glass); padding-bottom: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; }
+        @media(max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        .cart-summary { background: rgba(255,255,255,0.01); padding: 25px; border-radius: 12px; border: 1px dashed var(--border-glass); }
+        .cart-header-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid var(--border-glass); padding-bottom: 10px; font-size: 14px; color: var(--text-muted); }
+        .cart-list-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .cart-item-details h5 { font-size: 16px; font-weight: 600; color: white; }
+        .cart-item-details p { font-size: 13px; color: var(--primary); margin-top: 2px; }
+        .qty-controls { display: flex; align-items: center; gap: 12px; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 5px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); color: white; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .qty-btn:hover { background: var(--primary); border-color: var(--primary); }
+        .qty-val { font-size: 15px; font-weight: 700; min-width: 15px; text-align: center; }
+        
+        .totals-box { margin-top: 25px; background: rgba(255, 94, 54, 0.04); border: 1px solid rgba(255, 94, 54, 0.15); padding: 20px; border-radius: 8px; }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 15px; }
+        .total-row.grand { margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255, 94, 54, 0.3); font-size: 20px; font-weight: 800; color: white; }
+        .total-row.grand span:last-child { color: var(--primary); }
+
+        /* --- ADMINISTRATIVE DASHBOARD TABS --- */
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .metric-card { padding: 25px; text-align: left; }
+        .metric-card h4 { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .metric-card .value { font-size: 32px; font-weight: 800; margin-top: 8px; color: #fff; }
+        .metric-card .value span { color: var(--primary); }
+        
+        .admin-split { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; }
+        @media(max-width: 950px) { .admin-split { grid-template-columns: 1fr; } }
+        .live-orders-feed h3, .menu-management h3 { font-size: 20px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-glass); }
+        
+        .order-ticket { padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .ticket-info h5 { font-size: 16px; color: #fff; }
+        .ticket-info p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+        .ticket-items { font-size: 14px; margin-top: 10px; color: #cbd5e0; }
+        .ticket-status-btn { padding: 8px 16px; background: rgba(0, 230, 118, 0.12); border: 1px solid var(--accent-green); color: var(--accent-green); border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .ticket-status-btn:hover { background: var(--accent-green); color: #000; }
+        .ticket-status-btn.completed { background: rgba(255,255,255,0.05); border-color: var(--border-glass); color: var(--text-muted); pointer-events: none; }
+
+        .mgmt-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .toggle-switch { position: relative; display: inline-block; width: 46px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4a5568; transition: .3s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        footer { background: rgba(10, 15, 29, 0.8); text-align: center; padding: 30px; margin-top: 80px; font-size: 13px; border-top: 1px solid var(--border-glass); color: var(--text-muted); }
+        footer strong { color: var(--text-light); }
+    </style>
+</head>
+<body>
+
+    <!-- 1. SPLIT LOGIN SCREEN INTERFACE -->
+    <div id="login-page">
+        <div class="login-banner">
+            <h1>Annapurna Canteen</h1>
+            <p>Vel Tech Campus Hub Automation Framework</p>
+        </div>
+        <div class="login-container">
+            <div class="login-card">
+                <h2>Portal Access</h2>
+                <p class="subtitle">Authenticate with your campus credentials</p>
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Campus Identity ID / Name</label>
+                        <input type="text" id="username" placeholder="Enter student or manager name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password Matrix Key</label>
+                        <input type="password" id="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn">Authorize Entrance</button>
+                </form>
+                <a href="#" class="forgot-link" onclick="alert('Password initialization token mapped to your official Vel Tech database email record!')">Forgot System Password?</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION CORE ARCHITECTURE (Toggled by Auth engine) -->
+    <div id="main-app" class="hidden">
+        <nav>
+            <div class="nav-logo">
+                <h2>Annapurna<span>.Backend</span></h2>
+            </div>
+            <div class="nav-tabs">
+                <button class="tab-btn active" id="menu-tab-btn" onclick="switchDashboardTab('menu')">Food Ordering Menu</button>
+                <button class="tab-btn" id="admin-tab-btn" onclick="switchDashboardTab('admin')">Manager Administration Matrix</button>
+            </div>
+        </nav>
+
+        <!-- A. STOREFRONT ORDERING LAYER -->
+        <div id="storefront-layer" class="container">
+            <div class="controls-bar">
+                <div class="categories" id="category-bar">
+                    <button class="cat-btn active" onclick="filterMenu('all')">All Delicacies</button>
+                    <button class="cat-btn" onclick="filterMenu('tiffin')">Tiffin Break</button>
+                    <button class="cat-btn" onclick="filterMenu('meals')">Meals & Rice</button>
+                    <button class="cat-btn" onclick="filterMenu('snacks')">Snacks & Drinks</button>
+                    <button class="cat-btn" onclick="filterMenu('dinner')">Dinner Menu</button>
+                </div>
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" oninput="searchFoodEngine()" placeholder="Type to filter dishes live...">
+                </div>
+            </div>
+
+            <!-- Dynamic Menu Component Grid -->
+            <div class="menu-grid" id="menu-container"></div>
+
+            <!-- Shopping Basket Core Terminal -->
+            <div class="checkout-section glass-card">
+                <h3>Transactional Checkout Engine</h3>
+                <div class="grid-2">
+                    <div>
+                        <div class="cart-summary">
+                            <div class="cart-header-row">
+                                <span>Selected Dish Item Set</span>
+                                <span>Quantity Control Module</span>
+                            </div>
+                            <div id="cart-items-box">
+                                <p style="color: var(--text-muted); text-align: center; padding: 20px 0;">Your ordering matrix basket is completely empty.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="order-form" onsubmit="submitOrderGateway(event)">
+                        <div class="form-group">
+                            <label>Vel Tech Roll Registration ID (VTU)</label>
+                            <input type="text" id="student-roll" placeholder="e.g., VTU2026876" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Encrypted Mobile Contact Terminal</label>
+                            <input type="tel" id="student-phone" pattern="[0-9]{10}" placeholder="10-digit primary contact phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Mode Routing Gateway</label>
+                            <select id="payment-method" required>
+                                <option value="">Select Gateway Link</option>
+                                <option value="UPI Link">Integrated UPI Transaction QR</option>
+                                <option value="Vel Tech Card">Vel Tech Smart ID Card Vault</option>
+                                <option value="Cash Counter">Cash Handover Counter Point</option>
+                            </select>
+                        </div>
+                        
+                        <div class="totals-box">
+                            <div class="total-row">
+                                <span>Total Selected Elements:</span>
+                                <span id="summary-qty-count">0 items</span>
+                            </div>
+                            <div class="total-row grand">
+                                <span>Total Payable Sum:</span>
+                                <span id="summary-total-cost">₹0</span>
+                            </div>
+                        </div>
+                        <br>
+                        <button type="submit" class="btn">Verify & Finalize Order Terminal</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- B. MANAGEMENT ADMINISTRATIVE METRICS DASHBOARD LAYER -->
+        <div id="admin-layer" class="container hidden">
+            <div class="metrics-grid">
+                <div class="metric-card glass-card">
+                    <h4>Gross Cumulative Revenue</h4>
+                    <div class="value">₹<span id="metric-revenue">0</span></div>
+                </div>
+                <div class="metric-card glass-card">
+                    <h4>Total Registered Orders</h4>
+                    <div class="value"><span id="metric-orders-count">0</span></div>
+                </div>
+                <div class="metric-card glass-card">
+                    <h4>Active Pipeline Queue</h4>
+                    <div class="value"><span id="metric-active-queue">0</span></div>
+                </div>
+            </div>
+
+            <div class="admin-split">
+                <div class="live-orders-feed">
+                    <h3>Incoming Order Pipeline Data Feed</h3>
+                    <div id="orders-feed-box">
+                        <p style="color: var(--text-muted);">No transactional data orders submitted inside memory stacks yet.</p>
+                    </div>
+                </div>
+                <div class="menu-management">
+                    <h3>Inventory Stock Controls</h3>
+                    <div id="menu-mgmt-box"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Canteen node architecture location:</strong> Annapurna Main Food Court Compound, Phase 1 Hub, Avadi, Chennai.</p>
+            <p style="margin-top: 10px; opacity: 0.4;">Vel Tech Campus Automation Networks Integration Console &copy; 2026</p>
+        </footer>
+    </div>
+
+    <!-- ATS MINIMALIST INVOICE STRUCTURE FOR PDF COMPILATION -->
+    <div id="invoice-template-container" style="display:none;">
+        <div id="invoice-pdf" style="padding: 40px; font-family: Arial, sans-serif; color: #1a202c; background: #fff; max-width: 700px; margin: 0 auto; line-height: 1.5;">
+            <div style="border-bottom: 2px solid #2d3748; padding-bottom: 15px; margin-bottom: 25px;">
+                <h2 style="font-size: 24px; text-transform: uppercase; letter-spacing: 0.5px; color: #1a202c; margin: 0;">ANNAPURNA CANTEEN INVOICE</h2>
+                <p style="font-size: 12px; color: #4a5568; margin: 4px 0 0 0;">VEL TECH CAMPUS HUB • LOGISTICS DATA RECORD</p>
+            </div>
+            <table style="width: 100%; font-size: 13px; margin-bottom: 30px; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 4px 0; vertical-align: top; color: #4a5568; width: 120px;">TRANSACTION ID:</td>
+                    <td style="padding: 4px 0; font-weight: bold;" id="pdf-tx-id">TXN-0000</td>
+                    <td style="padding: 4px 0; text-align: right; color: #4a5568;">TIMESTAMP:</td>
+                    <td style="padding: 4px 0; font-weight: bold; text-align: right;" id="pdf-timestamp">2026-10-14 18:56</td>
+                </tr>
+                <tr>
+                    <td style="padding: 4px 0; vertical-align: top; color: #4a5568;">STUDENT ROLL ID:</td>
+                    <td style="padding: 4px 0; font-weight: bold;" id="pdf-student-id">VTU000</td>
+                    <td style="padding: 4px 0; text-align: right; color: #4a5568;">ROUTING LINK:</td>
+                    <td style="padding: 4px 0; font-weight: bold; text-align: right;" id="pdf-payment">UPI Gateway</td>
+                </tr>
+            </table>
+            <h4 style="font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #cbd5e0; padding-bottom: 5px; margin-bottom: 12px; color: #2d3748;">ORDER BREAKDOWN DETAILED SHEET</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 35px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #2d3748;">
+                        <th style="text-align: left; padding: 8px 0; font-weight: bold;">DESCRIPTION</th>
+                        <th style="text-align: center; padding: 8px 0; font-weight: bold; width: 80px;">QTY</th>
+                        <th style="text-align: right; padding: 8px 0; font-weight: bold; width: 100px;">UNIT RATE</th>
+                        <th style="text-align: right; padding: 8px 0; font-weight: bold; width: 120px;">SUBTOTAL</th>
+                    </tr>
+                </thead>
+                <tbody id="pdf-items-rows"></tbody>
+            </table>
+            <div style="width: 100%; display: flex; justify-content: flex-end; margin-top: 20px;">
+                <table style="width: 250px; font-size: 14px; border-collapse: collapse;">
+                    <tr style="border-top: 2px solid #2d3748; font-weight: bold; font-size: 16px;">
+                        <td style="padding: 10px 0;">NET OUTFLOW AMOUNT:</td>
+                        <td style="text-align: right; padding: 10px 0;" id="pdf-grand-total">₹0.00</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: center; font-size: 11px; color: #718096;">
+                This document is generated by automated data structures. Token distribution validation verified.<br>
+                Please present copy verification screen at Annapurna Main Kitchen Desk upon collection routing.
+            </div>
+        </div>
+    </div>
+
+    <!-- FRONTEND APP ENGINE LAYER -->
+    <script>
+        // Centralized Menu Dictionary matching requested pricing metrics
+        const menuPrices = {
+            "Coffee": 20, "Tea": 15, "Samosa": 25, "Biscuit": 10, "Dosa": 45,
+            "Idli": 35, "Puri": 40, "Chutney": 0, "Potato Curry": 30, "Rice": 50,
+            "Veg Biryani": 90, "Chicken Biryani": 130, "Chicken Curry": 110,
+            "Mutton Biryani": 180, "Mutton Curry": 160, "Chicken Lollipops": 140,
+            "Thums Up": 20, "Lemon Juice": 25, "Sandwich": 45, "Bread Omelette": 40
+        };
+
+        const menuCategories = {
+            "Coffee": "snacks", "Tea": "snacks", "Samosa": "snacks", "Biscuit": "snacks", "Dosa": "tiffin",
+            "Idli": "tiffin", "Puri": "tiffin", "Chutney": "tiffin", "Potato Curry": "meals", "Rice": "meals",
+            "Veg Biryani": "meals", "Chicken Biryani": "dinner", "Chicken Curry": "dinner", "Mutton Biryani": "dinner",
+            "Mutton Curry": "dinner", "Chicken Lollipops": "dinner", "Thums Up": "snacks", "Lemon Juice": "snacks",
+            "Sandwich": "snacks", "Bread Omelette": "tiffin"
+        };
+
+        const menuImages = {
+            "Coffee": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400",
+            "Tea": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=400",
+            "Samosa": "https://images.unsplash.com/photo-1601050690597-df056fb4ce78?w=400",
+            "Biscuit": "https://images.unsplash.com/photo-1558961317-194342a786ec?w=400",
+            "Dosa": "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=400",
+            "Idli": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400",
+            "Puri": "https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=400",
+            "Chutney": "https://images.unsplash.com/photo-1621264426543-ee0b3b4f6974?w=400",
+            "Potato Curry": "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=400",
+            "Rice": "https://images.unsplash.com/photo-1516685018646-549198525c1b?w=400",
+            "Veg Biryani": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400",
+            "Chicken Biryani": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=400",
+            "Chicken Curry": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400",
+            "Mutton Biryani": "https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=400",
+            "Mutton Curry": "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=400",
+            "Chicken Lollipops": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?w=400",
+            "Thums Up": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=400",
+            "Lemon Juice": "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=400",
+            "Sandwich": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400",
+            "Bread Omelette": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400"
+        };
+
+        let dbState = { orders: [], menu_status: {} };
+        let shoppingCart = {};
+        let currentActiveCategory = 'all';
+
+        // Fetch initialization data structures from dynamic Flask API endpoint layers
+        async function synchroniseBackendData() {
+            try {
+                const response = await fetch('/api/data');
+                dbState = await response.json();
+                renderMenuDisplayGrid();
+                updateAdministrativeMatrixViews();
+            } catch (err) {
+                console.error("System Engine Sync Warning: Simulating data fallback metrics layers.", err);
+            }
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            synchroniseBackendData();
+            // Poll database state periodically
+            setInterval(synchroniseBackendData, 4000);
+        }
+
+        function switchDashboardTab(targetTab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(targetTab === 'menu') {
+                document.getElementById('menu-tab-btn').classList.add('active');
+                document.getElementById('storefront-layer').classList.remove('hidden');
+                document.getElementById('admin-layer').classList.add('hidden');
+            } else {
+                document.getElementById('admin-tab-btn').classList.add('active');
+                document.getElementById('storefront-layer').classList.add('hidden');
+                document.getElementById('admin-layer').classList.remove('hidden');
+            }
+        }
+
+        function renderMenuDisplayGrid() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+
+            Object.keys(menuPrices).forEach(name => {
+                const cat = menuCategories[name];
+                const isAvailable = dbState.menu_status[name] !== false;
+                
+                // Active configuration matching filter rules
+                if(currentActiveCategory !== 'all' && cat !== currentActiveCategory) return;
+                if(searchVal && !name.toLowerCase().includes(searchVal)) return;
+
+                const card = document.createElement('div');
+                card.className = `menu-item glass-card ${isAvailable ? '' : 'disabled'}`;
+                card.innerHTML = `
+                    <img src="${menuImages[name]}" class="item-img" alt="${name}" onerror="this.src='https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400'">
+                    <div class="item-info">
+                        <div>
+                            <div class="item-title-row">
+                                <span class="item-name">${name}</span>
+                                <span class="item-price">₹${menuPrices[name]}</span>
+                            </div>
+                            <span class="item-cat">${cat}</span>
+                        </div>
+                        <button class="add-to-cart" onclick="modifyBasketItemQuantity('${name}', 1)">Add into Basket</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            if(container.children.length === 0) {
+                container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; padding:40px; color:var(--text-muted);">No delicacies match your filtered string requirements.</p>`;
+            }
+        }
+
+        function filterMenu(category) {
+            document.querySelectorAll('#category-bar .cat-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            currentActiveCategory = category;
+            renderMenuDisplayGrid();
+        }
+
+        function searchFoodEngine() {
+            renderMenuDisplayGrid();
+        }
+
+        function modifyBasketItemQuantity(name, step) {
+            if (!shoppingCart[name]) shoppingCart[name] = 0;
+            shoppingCart[name] += step;
+            if (shoppingCart[name] <= 0) delete shoppingCart[name];
+            updateBasketTerminalUI();
+        }
+
+        function updateBasketTerminalUI() {
+            const container = document.getElementById('cart-items-box');
+            const keys = Object.keys(shoppingCart);
+            
+            if (keys.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-muted); text-align: center; padding: 20px 0;">Your ordering matrix basket is completely empty.</p>`;
+                document.getElementById('summary-qty-count').innerText = "0 items";
+                document.getElementById('summary-total-cost').innerText = "₹0";
+                return;
+            }
+
+            let totalQty = 0;
+            let totalCost = 0;
+
+            container.innerHTML = keys.map(name => {
+                const qty = shoppingCart[name];
+                const itemTotal = qty * menuPrices[name];
+                totalQty += qty;
+                totalCost += itemTotal;
+
+                return `
+                    <div class="cart-list-item">
+                        <div class="cart-item-details">
+                            <h5>${name}</h5>
+                            <p>₹${menuPrices[name]} × ${qty}</p>
+                        </div>
+                        <div class="qty-controls">
+                            <button type="button" class="qty-btn" onclick="modifyBasketItemQuantity('${name}', -1)">-</button>
+                            <span class="qty-val">${qty}</span>
+                            <button type="button" class="qty-btn" onclick="modifyBasketItemQuantity('${name}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('summary-qty-count').innerText = `${totalQty} total elements`;
+            document.getElementById('summary-total-cost').innerText = `₹${totalCost}`;
+        }
+
+        async function submitOrderGateway(event) {
+            event.preventDefault();
+            const keys = Object.keys(shoppingCart);
+            if(keys.length === 0) {
+                alert("Cannot process checkout routing with an empty structural basket vector array.");
+                return;
+            }
+
+            const payload = {
+                studentId: document.getElementById('student-roll').value,
+                phone: document.getElementById('student-phone').value,
+                payment: document.getElementById('payment-method').value,
+                items: shoppingCart,
+                total: keys.reduce((sum, k) => sum + (shoppingCart[k] * menuPrices[k]), 0),
+                timestamp: new Date().toLocaleString()
+            };
+
+            try {
+                const response = await fetch('/api/order', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const responseData = await response.json();
+                
+                if(responseData.success) {
+                    alert("Order processed securely by local backend instance. Preparing your professional structural document billing system PDF receipt now...");
+                    compileInvoiceDocumentPDF(responseData.order);
+                    
+                    // Flush tracking arrays
+                    shoppingCart = {};
+                    updateBasketTerminalUI();
+                    document.getElementById('order-form').reset();
+                    synchroniseBackendData();
+                }
+            } catch(err) {
+                alert("Local backend operational interruption occurred. Order logged into virtual memory cache arrays.");
+            }
+        }
+
+        function compileInvoiceDocumentPDF(order) {
+            console.log("Generating PDF for order:", order);
+            
+            document.getElementById('pdf-tx-id').innerText = `TXN-000${order.id}`;
+            document.getElementById('pdf-timestamp').innerText = order.timestamp;
+            document.getElementById('pdf-student-id').innerText = order.studentId;
+            document.getElementById('pdf-payment').innerText = order.payment;
+
+            const tbody = document.getElementById('pdf-items-rows');
+            tbody.innerHTML = Object.keys(order.items).map(name => {
+                const qty = order.items[name];
+                const rate = menuPrices[name];
+                const sub = qty * rate;
+                return `
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 10px 0; font-weight: bold; color: #2d3748;">${name}</td>
+                        <td style="padding: 10px 0; text-align: center;">${qty}</td>
+                        <td style="padding: 10px 0; text-align: right;">₹${rate}.00</td>
+                        <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #1a202c;">₹${sub}.00</td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('pdf-grand-total').innerText = `₹${order.total}.00`;
+
+            const options = {
+                margin: 0.3,
+                filename: `Annapurna_Receipt_TXN_${order.id}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, letterRendering: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            const element = document.getElementById('invoice-pdf');
+            
+            if (typeof html2pdf === 'undefined') {
+                console.error("html2pdf library not loaded");
+                alert("PDF library not loaded. Please check your internet connection.");
+                return;
+            }
+            
+            html2pdf().set(options).from(element).save().then(() => {
+                console.log("PDF generated successfully");
+            }).catch(err => {
+                console.error("PDF generation error:", err);
+                alert("Error generating PDF: " + err.message);
+            });
+        }
+
+        function updateAdministrativeMatrixViews() {
+            // Calculate statistical aggregate counters
+            const totalOrdersCount = dbState.orders.length;
+            const pendingQueueCount = dbState.orders.filter(o => o.status === "Pending").length;
+            const grossRevenue = dbState.orders.reduce((sum, o) => sum + o.total, 0);
+
+            document.getElementById('metric-revenue').innerText = grossRevenue;
+            document.getElementById('metric-orders-count').innerText = totalOrdersCount;
+            document.getElementById('metric-active-queue').innerText = pendingQueueCount;
+
+            // Render continuous backend order feeds
+            const feed = document.getElementById('orders-feed-box');
+            if(dbState.orders.length === 0) {
+                feed.innerHTML = `<p style="color: var(--text-muted);">No transactional data orders submitted inside memory stacks yet.</p>`;
+            } else {
+                const pendingOrders = dbState.orders.filter(o => o.status === "Pending");
+                const completedOrders = dbState.orders.filter(o => o.status === "Completed");
+                
+                let html = '';
+                
+                // Show pending orders first
+                if(pendingOrders.length > 0) {
+                    html += '<h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">PENDING ORDERS</h4>';
+                    html += [...pendingOrders].reverse().map(order => {
+                        const itemsText = Object.keys(order.items).map(k => `${k} (×${order.items[k]})`).join(', ');
+                        return `
+                            <div class="order-ticket glass-card" style="margin-bottom: 15px;">
+                                <div class="ticket-info">
+                                    <h5>Order Token ID #000${order.id} — Student ID: ${order.studentId}</h5>
+                                    <p style="color: var(--primary); font-weight: 700;">Transaction Amount: ₹${order.total} | Method: ${order.payment}</p>
+                                    <div class="ticket-items">📦 Items Stack: ${itemsText}</div>
+                                    <p style="font-size: 11px; opacity:0.4; margin-top:6px;">Logged Time: ${order.timestamp}</p>
+                                </div>
+                                <div>
+                                    <button type="button" class="ticket-status-btn" 
+                                            onclick="resolvePipelineOrder(${order.id})">
+                                        Fulfill Order Token
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                // Show completed orders
+                if(completedOrders.length > 0) {
+                    html += '<h4 style="color: var(--accent-green); margin: 25px 0 15px 0; font-size: 14px;">COMPLETED ORDERS</h4>';
+                    html += [...completedOrders].reverse().map(order => {
+                        const itemsText = Object.keys(order.items).map(k => `${k} (×${order.items[k]})`).join(', ');
+                        return `
+                            <div class="order-ticket glass-card" style="margin-bottom: 15px; opacity: 0.6;">
+                                <div class="ticket-info">
+                                    <h5>Order Token ID #000${order.id} — Student ID: ${order.studentId}</h5>
+                                    <p style="color: var(--accent-green); font-weight: 700;">Transaction Amount: ₹${order.total} | Method: ${order.payment}</p>
+                                    <div class="ticket-items">📦 Items Stack: ${itemsText}</div>
+                                    <p style="font-size: 11px; opacity:0.4; margin-top:6px;">Logged Time: ${order.timestamp}</p>
+                                </div>
+                                <div>
+                                    <button type="button" class="ticket-status-btn completed">
+                                        Fulfillment Complete ✓
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                feed.innerHTML = html;
+            }
+
+            // Render system management stock tables
+            const mgmtBox = document.getElementById('menu-mgmt-box');
+            mgmtBox.innerHTML = `<h3>Inventory Controls</h3>`;
+            Object.keys(menuPrices).forEach(name => {
+                const isChecked = dbState.menu_status[name] !== false;
+                const row = document.createElement('div');
+                row.className = 'mgmt-row';
+                row.innerHTML = `
+                    <span style="font-weight: 600; color: #cbd5e0;">${name}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="toggleItemStockState('${name}')">
+                        <span class="slider"></span>
+                    </label>
+                `;
+                mgmtBox.appendChild(row);
+            });
+        }
+
+        async function resolvePipelineOrder(id) {
+            try {
+                await fetch('/api/order/complete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id})
+                });
+                synchroniseBackendData();
+            } catch (err) {
+                console.error("Pipeline action transaction dropped.");
+            }
+        }
+
+        async function toggleItemStockState(name) {
+            try {
+                await fetch('/api/menu/toggle', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name})
+                });
+                synchroniseBackendData();
+            } catch (err) {
+                console.error("Stock switch terminal validation failed.");
+            }
+        }
+    </script>
+</body>
+</html>
